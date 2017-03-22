@@ -1,0 +1,9 @@
+main { 
+variable k,i=0;
+if(i==60)
+{k=1;} 
+else{  k = 51;}  } 
+while(i){i = i-1;} 
+for(i=0;i <=3;i = i+1){k = k+1}
+}
+#

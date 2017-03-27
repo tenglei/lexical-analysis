@@ -2,6 +2,7 @@
 #include <vector>
 #include<string.h>
 #include<fstream>
+#include<map>
 using namespace std;
 class lexical_analysis{
 private:
@@ -275,6 +276,41 @@ public:
     }
     }
 };
+class grammatical_analysis{
+private:
+    map<string,string> c_gramma;
+    map<string,string> first;
+    map<string,string> follow;
+    void init_first(){
+
+    }
+    void init_follow(){
+
+    }
+    void init_gramma(){
+        map<string,string> terminate_or_disterminate;
+        terminate_or_disterminate.insert(pair<string,string>("terminate","+"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","-"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","*"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","/"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","id"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","("));
+        terminate_or_disterminate.insert(pair<string,string>("terminate",")"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","int"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","void"));
+        terminate_or_disterminate.insert(pair<string,string>("terminate","="));
+
+        terminate_or_disterminate.insert(pair<string,string>("disterminate","T"));
+        terminate_or_disterminate.insert(pair<string,string>("disterminate","F"));
+        terminate_or_disterminate.insert(pair<string,string>("disterminate","E"));
+        terminate_or_disterminate.insert(pair<string,string>("disterminate","TYPE"));
+
+        c_gramma.insert(pair<string,string>("type","int|void"));
+        c_gramma.insert(pair<string,string>("E","=T"));
+        c_gramma.insert(pair<string,string>("T","T+F|T*F|T"));
+        c_gramma.insert(pair<string,string>("F","T|id"));
+    }
+};
 int main(){
     //string tmp = "main {variable k,i=0;if(i==60){k=1;} else{  k = 51;}  } while(i){i = i-1;} for(i=0;i <=3;i = i+1){k = k+1} #";
     ifstream op("test.txt");
@@ -282,9 +318,11 @@ int main(){
     while(getline(op,test)){
         t += test+'\n';
     }
-    cout<<t;
-    lexical_analysis la(t);
-    cout<<"lexical analysis:"<<la.error<<endl;
+
+//    cout<<t;
+//    lexical_analysis la(t);
+//    cout<<"lexical analysis:"<<la.error<<endl;
+
 
     return 0;
 }

@@ -3,6 +3,7 @@
 #include<string.h>
 #include<fstream>
 #include<map>
+#include <utility>
 using namespace std;
 class lexical_analysis{
 private:
@@ -276,39 +277,96 @@ public:
     }
     }
 };
+class Pair{
+public:
+    pair<string,string> p;
+    int point;
+    int tail;
+    Pair(string s,string t,int i){
+        p = make_pair(s,t);
+        point = i;
+        tail = t.length();
+    }
+
+};
+class sColsure{
+public:
+    vector <Pair> colsure;
+    void addPair(Pair p){
+        colsure.push_back(p);
+    }
+};
+class bColsure{
+public:
+    vector<sColsure> colsure;
+    void addColsure(sColsure col){
+        colsure.push_back(col);
+    }
+    int colsureNum(){
+        return colsure.size();
+    }
+};
 class grammatical_analysis{
 private:
-    map<string,string> c_gramma;
-    map<string,string> first;
-    map<string,string> follow;
+    multimap<string,string> c_gramma;
+    vector<string> terminate;
+    vector<string> disterminate;
+    multimap<string,string> first;
+    multimap<string,string> follow;
     void init_first(){
-
+        typedef multimap<string,string>::iterator c_grammaMapItor;
+        typedef multimap<string,string>::iterator It;
+        It it;
+        for(it=c_gramma.begin();it!=c_gramma.end();it++){
+            cout<<it->first<<endl;
+            cout<<it->second<<endl;
+//            pair<c_grammaMapItor,c_grammaMapItor>pos = c_gramma.equal_range(it->first);
+//            while(pos.first!=pos.second){
+//                cout<<pos.first->second<<endl;
+//                ++pos.first;
+//            }
+            //循环查找first集合即可
+            first.insert(pair<string,string>());
+            cout<<endl;
+        }
     }
     void init_follow(){
 
     }
     void init_gramma(){
-        map<string,string> terminate_or_disterminate;
-        terminate_or_disterminate.insert(pair<string,string>("terminate","+"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","-"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","*"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","/"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","id"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","("));
-        terminate_or_disterminate.insert(pair<string,string>("terminate",")"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","int"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","void"));
-        terminate_or_disterminate.insert(pair<string,string>("terminate","="));
 
-        terminate_or_disterminate.insert(pair<string,string>("disterminate","T"));
-        terminate_or_disterminate.insert(pair<string,string>("disterminate","F"));
-        terminate_or_disterminate.insert(pair<string,string>("disterminate","E"));
-        terminate_or_disterminate.insert(pair<string,string>("disterminate","TYPE"));
 
-        c_gramma.insert(pair<string,string>("type","int|void"));
+
+
         c_gramma.insert(pair<string,string>("E","=T"));
-        c_gramma.insert(pair<string,string>("T","T+F|T*F|T"));
-        c_gramma.insert(pair<string,string>("F","T|id"));
+        c_gramma.insert(pair<string,string>("T","T1+F"));
+        c_gramma.insert(pair<string,string>("T","T1*F"));
+        c_gramma.insert(pair<string,string>("T","T1-F"));
+        c_gramma.insert(pair<string,string>("T","T1/F"));
+        c_gramma.insert(pair<string,string>("T1","T"));
+        c_gramma.insert(pair<string,string>("T1","id"));
+        c_gramma.insert(pair<string,string>("F","T"));
+        c_gramma.insert(pair<string,string>("F","id"));
+
+
+        terminate.push_back("=");
+        terminate.push_back("+");
+        terminate.push_back("*");
+        terminate.push_back("-");
+        terminate.push_back("/");
+
+        disterminate.push_back("E");
+        disterminate.push_back("T");
+        disterminate.push_back("T1");
+        disterminate.push_back("F");
+
+
+        init_first();
+        init_follow();
+    }
+public:
+    grammatical_analysis(){
+        init_gramma();
     }
 };
 int main(){
@@ -323,6 +381,7 @@ int main(){
 //    lexical_analysis la(t);
 //    cout<<"lexical analysis:"<<la.error<<endl;
 
+    grammatical_analysis ga;
 
     return 0;
 }

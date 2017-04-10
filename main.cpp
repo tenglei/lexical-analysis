@@ -280,7 +280,8 @@ public:
 class Pair{
 public:
     pair<string,string> p;
-    int point;
+    int priority;
+    int point=0;
     int tail;
     Pair(string s,string t,int i){
         p = make_pair(s,t);
@@ -295,12 +296,43 @@ public:
     void addPair(Pair p){
         colsure.push_back(p);
     }
+    void test(){
+        for(int i=0;i<colsure.size();i++){
+            cout<<colsure[i].p.first<<" "<<colsure[i].p.second<<" "<<colsure[i].point<<" "<<colsure[i].priority<<endl;
+        }
+    }
+    bool exitPair(Pair fpair,int point){
+        typedef vector<Pair>::iterator It;
+        It it;
+        for(it=colsure.begin();it!=colsure.end();it++){
+            if(it->p.first==fpair.p.first&&it->p.second==fpair.p.second&&it->point==point){
+                return true;
+            }
+        }
+        return false;
+    }
 };
 class bColsure{
+private:
+    int exitPair(Pair fpair,int point){
+        typedef vector<sColsure>::iterator It;
+        It it;
+        int num=0;
+        for(it=colsure.begin();it!=colsure.end();it++){
+             if(it->exitPair(fpair,point)){
+                return num;
+             }
+             num++;
+        }
+        return -1;
+    }
 public:
     vector<sColsure> colsure;
     void addColsure(sColsure col){
         colsure.push_back(col);
+    }
+    void addColsure(Pair p,int i){
+        colsure[i].addPair(p);
     }
     int colsureNum(){
         return colsure.size();
@@ -308,6 +340,7 @@ public:
 };
 class grammatical_analysis{
 private:
+    bColsure bcol;
     multimap<string,string> c_gramma;
     vector<string> terminate;
     vector<string> disterminate;
@@ -317,18 +350,18 @@ private:
         typedef multimap<string,string>::iterator c_grammaMapItor;
         typedef multimap<string,string>::iterator It;
         It it;
-        for(it=c_gramma.begin();it!=c_gramma.end();it++){
-            cout<<it->first<<endl;
-            cout<<it->second<<endl;
-//            pair<c_grammaMapItor,c_grammaMapItor>pos = c_gramma.equal_range(it->first);
-//            while(pos.first!=pos.second){
-//                cout<<pos.first->second<<endl;
-//                ++pos.first;
-//            }
-            //循环查找first集合即可
-            first.insert(pair<string,string>());
-            cout<<endl;
-        }
+//        for(it=c_gramma.begin();it!=c_gramma.end();it++){
+//            cout<<it->first<<endl;
+//            cout<<it->second<<endl;
+////            pair<c_grammaMapItor,c_grammaMapItor>pos = c_gramma.equal_range(it->first);
+////            while(pos.first!=pos.second){
+////                cout<<pos.first->second<<endl;
+////                ++pos.first;
+////            }
+//            //循环查找first集合即可
+//          //  first.insert(pair<string,string>());
+//            cout<<endl;
+//        }
     }
     void init_follow(){
 
@@ -338,18 +371,16 @@ private:
 
 
 
-        c_gramma.insert(pair<string,string>("E","=T"));
-        c_gramma.insert(pair<string,string>("T","T1+F"));
-        c_gramma.insert(pair<string,string>("T","T1*F"));
-        c_gramma.insert(pair<string,string>("T","T1-F"));
-        c_gramma.insert(pair<string,string>("T","T1/F"));
-        c_gramma.insert(pair<string,string>("T1","T"));
-        c_gramma.insert(pair<string,string>("T1","id"));
-        c_gramma.insert(pair<string,string>("F","T"));
+        c_gramma.insert(pair<string,string>("E","E+T"));
+        c_gramma.insert(pair<string,string>("E","E-T"));
+        c_gramma.insert(pair<string,string>("E","T"));
+        c_gramma.insert(pair<string,string>("T","T*F"));
+        c_gramma.insert(pair<string,string>("T","T/F"));
+        c_gramma.insert(pair<string,string>("T","F"));
+        c_gramma.insert(pair<string,string>("F","(E)"));
         c_gramma.insert(pair<string,string>("F","id"));
 
 
-        terminate.push_back("=");
         terminate.push_back("+");
         terminate.push_back("*");
         terminate.push_back("-");
@@ -357,16 +388,32 @@ private:
 
         disterminate.push_back("E");
         disterminate.push_back("T");
-        disterminate.push_back("T1");
         disterminate.push_back("F");
 
 
         init_first();
         init_follow();
     }
+    void init_colsure(){
+        typedef multimap<string,string>::iterator It;
+        string left,right;
+        sColsure scolsure;
+        It it;
+        init_gramma();
+        sColsure *head = new sColsure();
+        for(it=c_gramma.begin();it!=c_gramma.end();it++){
+            left = it->first;
+            right= it->second;
+            Pair p(left,right,0);
+            scolsure.addPair(p);
+            cout<<left<<" "<<right<<endl;
+        }
+        bcol.addColsure(scolsure);
+
+    }
 public:
     grammatical_analysis(){
-        init_gramma();
+        init_colsure();
     }
 };
 int main(){
@@ -382,6 +429,7 @@ int main(){
 //    cout<<"lexical analysis:"<<la.error<<endl;
 
     grammatical_analysis ga;
+
 
     return 0;
 }

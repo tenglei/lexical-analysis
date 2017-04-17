@@ -260,8 +260,6 @@ public:
                         error = -2;
                         return ;
                 }
-
-
             }
           if(tmp[pt_tmp]=='#'){
                 cout<<"("<<line<<","<<syn<<","<<tmp[pt_tmp]<<")"<<endl;
@@ -317,7 +315,7 @@ public:
     }
 };
 class bColsure{
-private:
+public:
     int exitPair(Pair fpair,int point){
         typedef vector<sColsure>::iterator It;
         It it;
@@ -330,7 +328,6 @@ private:
         }
         return -1;
     }
-public:
     vector<sColsure> colsure;
     void addColsure(sColsure col){
         colsure.push_back(col);
@@ -374,15 +371,12 @@ private:
 
 
 
-        c_gramma.insert(pair<string,string>("~","E  "));
-        c_gramma.insert(pair<string,string>("E","E+T"));
-        c_gramma.insert(pair<string,string>("E","E-T"));
-        c_gramma.insert(pair<string,string>("E","T"));
-        c_gramma.insert(pair<string,string>("T","T*F"));
-        c_gramma.insert(pair<string,string>("T","T/F"));
-        c_gramma.insert(pair<string,string>("T","F"));
-        c_gramma.insert(pair<string,string>("F","(E)"));
-        c_gramma.insert(pair<string,string>("F","I"));
+        c_gramma.insert(pair<string,string>("~","S"));
+        c_gramma.insert(pair<string,string>("S","L=R"));
+        c_gramma.insert(pair<string,string>("S","R"));
+        c_gramma.insert(pair<string,string>("L","*R"));
+        c_gramma.insert(pair<string,string>("L","I"));
+        c_gramma.insert(pair<string,string>("R","L"));
 
 
         terminate.push_back("+");
@@ -401,7 +395,8 @@ private:
     void init_colsure(){
         typedef multimap<string,string>::iterator It;
         string left,right,tmp;
-        int scolpointlocal;
+        char nextchar;
+        int scolpointlocal,pairpoint;
         bool isin;
         sColsure scolsure;
         It it;
@@ -428,26 +423,45 @@ private:
             if(isin==false){
                 bcol.colsure[0].linkchar.push_back(tmp[bcol.colsure[0].colsure[i].point]);
                 sColsure *scol = new sColsure();
+                sColsure addscol;
                 int newpoint = bcol.colsure[0].colsure[i].point+1;
                 Pair p(bcol.colsure[0].colsure[i].p.first,tmp,newpoint);
                 scol->addPair(p);
+                addscol.addPair(p);
                 bcol.colsure[0].scolsure.push_back(scol);
-                cout<<"bcol.colsure[0].colsure[i].p.first:"<<bcol.colsure[0].colsure[i].p.first<<endl;
-                cout<<"tmp[bcol.colsure[0].colsure[i].point] second:"<<tmp[bcol.colsure[0].colsure[i].point]<<endl;
-                cout<<"tmp:"<<tmp<<endl;
-                cout<<"creat number:"<<bcol.colsure[0].scolsure.size()-1<<endl;
-                cout<<"not in creat new"<<endl;
+                bcol.addColsure(addscol);
+//                cout<<"bcol.colsure[0].colsure[i].p.first:"<<bcol.colsure[0].colsure[i].p.first<<endl;
+//                cout<<"tmp[bcol.colsure[0].colsure[i].point] second:"<<tmp[bcol.colsure[0].colsure[i].point]<<endl;
+//                cout<<"tmp:"<<tmp<<endl;
+//                cout<<"creat number:"<<bcol.colsure[0].scolsure.size()-1<<endl;
+//                cout<<"not in creat new"<<endl;
             }
             else{
                 int newpoint = bcol.colsure[0].colsure[i].point+1;
                 Pair p(bcol.colsure[0].colsure[i].p.first,tmp,newpoint);
                 bcol.colsure[0].scolsure[scolpointlocal]->addPair(p);
-                cout<<"bcol.colsure[0].colsure[i].p.first:"<<bcol.colsure[0].colsure[i].p.first<<endl;
-                cout<<"tmp[bcol.colsure[0].colsure[i].point] second:"<<tmp[bcol.colsure[0].colsure[i].point]<<endl;
-                cout<<"tmp:"<<tmp<<endl;
-                cout<<"insert number:"<<scolpointlocal<<endl;
-                cout<<"is in"<<endl;
+//                cout<<"bcol.colsure[0].colsure[i].p.first:"<<bcol.colsure[0].colsure[i].p.first<<endl;
+//                cout<<"tmp[bcol.colsure[0].colsure[i].point] second:"<<tmp[bcol.colsure[0].colsure[i].point]<<endl;
+//                cout<<"tmp:"<<tmp<<endl;
+//                cout<<"insert number:"<<scolpointlocal<<endl;
+//                cout<<"is in"<<endl;
             }
+
+        }
+        for(int i=0;i<bcol.colsure[0].scolsure.size();i++){
+            for(int j=0;j<bcol.colsure[0].scolsure[i]->colsure.size();j++){
+                if(bcol.colsure[0].scolsure[i]->colsure[j].point != bcol.colsure[0].scolsure[i]->colsure[j].p.second.length()){
+                    pairpoint = bcol.colsure[0].scolsure[i]->colsure[j].point;
+                    pairpoint++;
+                    nextchar = bcol.colsure[0].scolsure[i]->colsure[j].p.second[pairpoint];
+                    vector<Pair> addPair = addfollow(nextchar);
+                    for(int k=0;k<addPair.size();k++){
+                        bcol.colsure[0].scolsure[i]->addPair(addPair[k]);
+                    }
+                }
+
+            }
+            //add buildcolsure
 
         }
 
@@ -463,14 +477,43 @@ private:
                 Pair p(firsttmp,it->p.second,0);
                 res.push_back(p);
                 secondtmp = it->p.second;
+                cout<<"add pair :"<<p.p.first<<","<<p.p.second<<endl;
                 res = addfollow(secondtmp[0]);
             }
         }
         return res;
-
     }
-    void buildcolsure(sColsure *&scol,int point){
+    void buildcolsure(sColsure *&scol){
+        for(int i=0;i<scol->colsure.size();i++){
+            if(scol->colsure[i].point!=scol->colsure[i].p.second.length()){
+                int scolnum,pairpoint = scol->colsure[i].point+1;
+                string findfirst,findsecond;
+                findfirst = scol->colsure[i].p.first;
+                findsecond = scol->colsure[i].p.second;
+                Pair findpair(findfirst,findsecond,pairpoint);
+                scolnum = bcol.exitPair(findpair,pairpoint);
+                if(scolnum!=-1){
+                    //add link
+                }
+                else{
+                    sColsure *s = new sColsure();
+                    sColsure adds;
+                    s->addPair(findpair);
+                    adds.addPair(findpair);
+                    scol->linkchar.push_back(findsecond[pairpoint]);
+                    scol->scolsure.push_back(s);
+                    adds.linkchar.push_back(findsecond[pairpoint]);
+                    adds.scolsure.push_back(s);
+                    bcol.colsure.push_back(adds);
 
+
+                   // scol->scolsure.push_back();
+                }
+            }
+        }
+        for(int j=0;j<scol->scolsure.size();j++){
+            buildcolsure(scol->scolsure[j]);
+        }
     }
 public:
     grammatical_analysis(){

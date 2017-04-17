@@ -283,18 +283,22 @@ public:
     int priority;
     int point=0;
     int tail;
-    Pair(string s,string t,int i){
-        p = make_pair(s,t);
+    Pair(string f,string s,int i){
+        p = make_pair(f,s);
         point = i;
-        tail = t.length();
+        tail = s.length();
     }
 
 };
 class sColsure{
 public:
     vector <Pair> colsure;
+    vector<sColsure*> scolsure;
+    vector<char> linkchar;
+    int Size=0;
     void addPair(Pair p){
         colsure.push_back(p);
+        Size++;
     }
     void test(){
         for(int i=0;i<colsure.size();i++){
@@ -370,7 +374,7 @@ private:
 
 
 
-
+        c_gramma.insert(pair<string,string>("~","E  "));
         c_gramma.insert(pair<string,string>("E","E+T"));
         c_gramma.insert(pair<string,string>("E","E-T"));
         c_gramma.insert(pair<string,string>("E","T"));
@@ -378,7 +382,7 @@ private:
         c_gramma.insert(pair<string,string>("T","T/F"));
         c_gramma.insert(pair<string,string>("T","F"));
         c_gramma.insert(pair<string,string>("F","(E)"));
-        c_gramma.insert(pair<string,string>("F","id"));
+        c_gramma.insert(pair<string,string>("F","I"));
 
 
         terminate.push_back("+");
@@ -396,7 +400,9 @@ private:
     }
     void init_colsure(){
         typedef multimap<string,string>::iterator It;
-        string left,right;
+        string left,right,tmp;
+        int scolpointlocal;
+        bool isin;
         sColsure scolsure;
         It it;
         init_gramma();
@@ -409,6 +415,61 @@ private:
             cout<<left<<" "<<right<<endl;
         }
         bcol.addColsure(scolsure);
+        for(int i=0;i<bcol.colsure[0].Size;i++){
+            tmp = bcol.colsure[0].colsure[i].p.second;
+            isin = false;
+            for(int j=0;j<bcol.colsure[0].linkchar.size();j++){
+                if(tmp[bcol.colsure[0].colsure[i].point] == bcol.colsure[0].linkchar[j]){
+                    isin = true;
+                    scolpointlocal = j;
+                    break;
+                }
+            }
+            if(isin==false){
+                bcol.colsure[0].linkchar.push_back(tmp[bcol.colsure[0].colsure[i].point]);
+                sColsure *scol = new sColsure();
+                int newpoint = bcol.colsure[0].colsure[i].point+1;
+                Pair p(bcol.colsure[0].colsure[i].p.first,tmp,newpoint);
+                scol->addPair(p);
+                bcol.colsure[0].scolsure.push_back(scol);
+                cout<<"bcol.colsure[0].colsure[i].p.first:"<<bcol.colsure[0].colsure[i].p.first<<endl;
+                cout<<"tmp[bcol.colsure[0].colsure[i].point] second:"<<tmp[bcol.colsure[0].colsure[i].point]<<endl;
+                cout<<"tmp:"<<tmp<<endl;
+                cout<<"creat number:"<<bcol.colsure[0].scolsure.size()-1<<endl;
+                cout<<"not in creat new"<<endl;
+            }
+            else{
+                int newpoint = bcol.colsure[0].colsure[i].point+1;
+                Pair p(bcol.colsure[0].colsure[i].p.first,tmp,newpoint);
+                bcol.colsure[0].scolsure[scolpointlocal]->addPair(p);
+                cout<<"bcol.colsure[0].colsure[i].p.first:"<<bcol.colsure[0].colsure[i].p.first<<endl;
+                cout<<"tmp[bcol.colsure[0].colsure[i].point] second:"<<tmp[bcol.colsure[0].colsure[i].point]<<endl;
+                cout<<"tmp:"<<tmp<<endl;
+                cout<<"insert number:"<<scolpointlocal<<endl;
+                cout<<"is in"<<endl;
+            }
+
+        }
+
+    }
+    vector<Pair> addfollow(char c){
+        vector<Pair> res;
+        typedef vector<Pair>::iterator It;
+        string firsttmp,secondtmp;
+        It it;
+        for(it=bcol.colsure[0].colsure.begin();it!=bcol.colsure[0].colsure.end();it++){
+            firsttmp = it->p.first;
+            if(c==firsttmp[0]){
+                Pair p(firsttmp,it->p.second,0);
+                res.push_back(p);
+                secondtmp = it->p.second;
+                res = addfollow(secondtmp[0]);
+            }
+        }
+        return res;
+
+    }
+    void buildcolsure(sColsure *&scol,int point){
 
     }
 public:

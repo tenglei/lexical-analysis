@@ -285,7 +285,7 @@ public:
     Pair(string f,string s,int i){
         p = make_pair(f,s);
         point = i;
-        tail = s.length();
+        tail = s.length()-1;
     }
 
 };
@@ -293,8 +293,9 @@ class sColsure{
 public:
     vector <Pair> colsure;
     vector<sColsure*> scolsure;
+    vector<string> tag;
     vector<char> linkchar;
-    string tag="empty";
+    int I;
     int Size=0;
     void addPair(Pair p){
         colsure.push_back(p);
@@ -309,7 +310,8 @@ public:
         typedef vector<Pair>::iterator It;
         It it;
         it=colsure.begin();
-        if(it->p.first==fpair.p.first&&it->p.second==fpair.p.second&&it->point==point){
+        if(it->p.first==fpair.p.first&&it->p.second==fpair.p.second&&it->point==point&&it->follow==fpair.follow){
+//            cout<<"test exist:"<<fpair.p.first<<"->"<<fpair.p.second<<","<<fpair.point<<endl;
             return true;
         }
         else{
@@ -320,6 +322,8 @@ public:
 };
 class bColsure{
 public:
+    vector<sColsure> colsure;
+    int I=1;
     int exitPair(Pair fpair,int point){
         typedef vector<sColsure>::iterator It;
         It it;
@@ -332,7 +336,6 @@ public:
         }
         return -1;
     }
-    vector<sColsure> colsure;
     void addColsure(sColsure col){
         colsure.push_back(col);
     }
@@ -347,10 +350,11 @@ class grammatical_analysis{
 private:
     bColsure bcol;
     vector<Pair> c_gramma;
-    vector<string> terminate;
-    vector<string> disterminate;
+    vector<char> terminate;
+    vector<char> disterminate;
     multimap<string,string> first;
     multimap<string,string> follow;
+    vector<vector<char> > action,Goto;
     void init_first(){
         typedef multimap<string,string>::iterator c_grammaMapItor;
         typedef multimap<string,string>::iterator It;
@@ -369,14 +373,15 @@ private:
 //        }                cout<<"add new point :"<<newpoint<<endl;
 
     }
-    void init_follow(){
 
-    }
     void init_gramma(){
 
 
         Pair p("~","S",0);
         c_gramma.push_back(p);
+        c_gramma[0].follow.push_back("#");
+
+
         Pair p1("S","L=R",0);
         c_gramma.push_back(p1);
         Pair p2("S","R",0);
@@ -389,18 +394,17 @@ private:
         c_gramma.push_back(p5);
 
 
-        terminate.push_back("+");
-        terminate.push_back("*");
-        terminate.push_back("-");
-        terminate.push_back("/");sColsure *newscol = new sColsure();
+        terminate.push_back('+');
+        terminate.push_back('*');
+        terminate.push_back('-');
+        terminate.push_back('=');
+        terminate.push_back('I');
 
-        disterminate.push_back("E");
-        disterminate.push_back("T");
-        disterminate.push_back("F");
+        disterminate.push_back('S');
+        disterminate.push_back('R');
+        disterminate.push_back('L');
 
 
-        init_first();
-        init_follow();
     }
     void init_colsure(){
         typedef vector<Pair>::iterator It;
@@ -416,11 +420,25 @@ private:
             left = it->p.first;
             right= it->p.second;
             Pair p(left,right,0);
+            p.follow = it->follow;
             scolsure.addPair(p);
             cout<<left<<" "<<right<<endl;
         }
         bcol.addColsure(scolsure);
+        bcol.colsure[0].I = bcol.I;
+        bcol.I++;
         //add linkchar
+        //cout<<"size:"<<bcol.colsure[0].colsure.size()<<endl;
+        for(int i=0;i<bcol.colsure[0].colsure.size();i++){
+                init_follow(i);
+        }
+//        for(int i=0;i<bcol.colsure[0].colsure.size();i++){
+//            cout<<"follow:";
+//            for(int j=0;j<bcol.colsure[0].colsure[i].follow.size();j++){
+//                cout<<bcol.colsure[0].colsure[i].follow[j];
+//            }
+//            cout<<endl;
+//        }
         for(int i=0;i<bcol.colsure[0].Size;i++){
             tmp = bcol.colsure[0].colsure[i].p.second;
             isin = false;
@@ -437,8 +455,11 @@ private:
                 sColsure addscol;
                 int newpoint = bcol.colsure[0].colsure[i].point+1;
                 Pair p(bcol.colsure[0].colsure[i].p.first,tmp,newpoint);
+                p.follow.assign(bcol.colsure[0].colsure[i].follow.begin(),bcol.colsure[0].colsure[i].follow.end());
                 addscol.addPair(p);
                 *scol = addscol;
+                scol->I = bcol.I;
+                bcol.I++;
                 bcol.colsure[0].scolsure.push_back(scol);
                 bcol.addColsure(addscol);
 //                cout<<"add:"<<bcol.colsure[0].colsure[i].p.first<<"->"<<tmp<<","<<p.point<<endl;
@@ -449,6 +470,7 @@ private:
             else{
                 int newpoint = bcol.colsure[0].colsure[i].point+1;
                 Pair p(bcol.colsure[0].colsure[i].p.first,tmp,newpoint);
+                p.follow.assign(bcol.colsure[0].colsure[i].follow.begin(),bcol.colsure[0].colsure[i].follow.end());
                 bcol.addColsure(p,scolpointlocal+1);
                 bcol.colsure[0].scolsure[scolpointlocal]->addPair(p);
 //                cout<<"add:"<<p.p.first<<"->"<<p.p.second<<","<<p.point<<endl;
@@ -458,6 +480,8 @@ private:
         }
         for(int i=0;i<bcol.colsure[0].scolsure.size();i++){
             int scolsuresize = bcol.colsure[0].scolsure[i]->colsure.size();
+            vector<string> f;
+            f.assign(bcol.colsure[0].scolsure[i]->colsure[0].follow.begin(),bcol.colsure[0].scolsure[i]->colsure[0].follow.end());
             for(int j=0;j<scolsuresize;j++){
                 if(bcol.colsure[0].scolsure[i]->colsure[j].point != bcol.colsure[0].scolsure[i]->colsure[j].p.second.length()){
 //                cout<<"pair:"<<bcol.colsure[0].scolsure[i]->colsure[j].p.first<<"->"<<bcol.colsure[0].scolsure[i]->colsure[j].p.second<<endl;
@@ -467,9 +491,11 @@ private:
 //                cout<<"find char add :"<<nextchar<<endl;
                     vector<Pair> addPair;
                     addfollow(nextchar,addPair);
+
 //                cout<<"add pair size:"<<addPair.size()<<endl;
                     for(int k=0;k<addPair.size();k++){
 //                        cout<<addPair[k].p.first<<"->"<<addPair[k].p.second<<endl;
+                        addPair[k].follow.assign(f.begin(),f.end());
                         bcol.colsure[0].scolsure[i]->addPair(addPair[k]);
                         bcol.addColsure(addPair[k],i+1);
 //                        cout<<addPair[k].p.first<<"->"<<addPair[k].p.second<<endl;
@@ -478,6 +504,7 @@ private:
 
             }
         }
+       // init_follow();
 //        for(int i=0;i<bcol.colsure[0].scolsure.size();i++){
 //            cout<<"scolsure:"<<i<<endl;
 //            bcol.colsure[0].scolsure[i]->test();
@@ -486,29 +513,55 @@ private:
             cout<<"build i:"<<i<<endl;
             buildcolsure(bcol.colsure[0].scolsure[i]);
         }
+        sColsure *root = new sColsure();
+        init_action_goto(root);
         for(int i=0;i<bcol.colsure[0].scolsure.size();i++){
             cout<<"print i:"<<i<<endl;
             printflink(bcol.colsure[0].scolsure[i]);
         }
+        cout<<bcol.I<<endl;
+    }
+    bool isterminate(char s){
+        for(int i=0;i<terminate.size();i++){
+            if(s==terminate[i]){
+                return true;
+            }
+        }
+        return false;
     }
     void printflink(sColsure *p){
-        cout<<"p->scolsure.size"<<p->scolsure.size()<<endl;
+        cout<<"p->scolsure.size:"<<p->scolsure.size()<<endl;
         if(p->scolsure.size()==0){
             for(int i=0;i<p->colsure.size();i++){
-                cout<<"pair:"<<p->colsure[i].p.first<<"->"<<p->colsure[i].p.second<<","<<p->colsure[i].point<<endl;
+                cout<<"pair:"<<p->colsure[i].p.first<<"->"<<p->colsure[i].p.second<<","<<p->colsure[i].point<<" ";
+                cout<<"follow:";
+                for(int j=0;j<p->colsure[i].follow.size();j++){
+                    cout<<p->colsure[i].follow[j];
+                }
+                cout<<endl;
             }
             cout<<endl;
             return;
         }
         else{
             for(int i=0;i<p->colsure.size();i++){
-                cout<<"pair:"<<p->colsure[i].p.first<<"->"<<p->colsure[i].p.second<<","<<p->colsure[i].point<<endl;
+                cout<<"pair:"<<p->colsure[i].p.first<<"->"<<p->colsure[i].p.second<<","<<p->colsure[i].point<<" ";
+                cout<<"follow:";
+                for(int j=0;j<p->colsure[i].follow.size();j++){
+                    cout<<p->colsure[i].follow[j];
+                }
+                cout<<endl;
+                cout<<"linkchar:"<<endl;
+                for(int j=0;j<p->linkchar.size();j++){
+                    cout<<p->linkchar[j];
+                }
+                cout<<endl;
             }
             cout<<endl;
             for(int j=0;j<p->scolsure.size();j++){
-                cout<<p->scolsure[j]->tag<<endl;
-                if(p->scolsure[j]->tag=="create"){
-                printflink(p->scolsure[j]);
+                cout<<p->tag[j]<<endl;
+                if(p->tag[j]=="create"){
+                    printflink(p->scolsure[j]);
                 }
             }
         }
@@ -522,6 +575,7 @@ private:
             firsttmp = it->p.first;
             if(c==firsttmp[0]){
                 Pair p(firsttmp,it->p.second,0);
+
                 res.push_back(p);
                 secondtmp = it->p.second;
 //                cout<<"add pair :"<<p.p.first<<","<<p.p.second<<","<<p.point<<endl;
@@ -542,50 +596,87 @@ private:
                 if(scol->colsure[i].p.second.length()!=scol->colsure[i].point){
                     int findnum;
                     Pair p(scol->colsure[i].p.first,scol->colsure[i].p.second,scol->colsure[i].point+1);
+                    p.follow.assign(scol->colsure[i].follow.begin(),scol->colsure[i].follow.end());
                     findnum = bcol.exitPair(p,scol->colsure[i].point+1);
                     if(findnum==-1){
                         sColsure *newscol = new sColsure();
                         sColsure scolsure;
                         scolsure.addPair(p);
-                        scolsure.tag="create";
                         vector <Pair> addPair;
                         addfollow(scolsure.colsure[0].p.second[scolsure.colsure[0].point],addPair);
                         if(addPair.size()!=0){
                             for(int i=0;i<addPair.size();i++){
+                                addPair[i].follow.assign(p.follow.begin(),p.follow.end());
                                 scolsure.colsure.push_back(addPair[i]);
                             }
                         }
-                       // cout<<"creat:"<<addPair.size()+1<<endl;
+//                        cout<<"creat:"<<addPair.size()+1<<endl;
+//                        cout<<p.p.first<<"->"<<p.p.second<<","<<p.point<<endl;
                         *newscol = scolsure;
+                        newscol->I = bcol.I;
+                        bcol.I++;
                         scol->scolsure.push_back(newscol);
                         scol->linkchar.push_back(scol->colsure[i].p.second[scol->colsure[i].point]);
+                        scol->tag.push_back("create");
                         bcol.addColsure(scolsure);
                     }
                     else{
-                        if(scol->exitPair(p,scol->colsure[i].point+1)){
+                        if(scol->exitPair(p,p.point)){
                             scol->linkchar.push_back(scol->colsure[i].p.second[scol->colsure[i].point]);
-                            scol->tag = "linkself";
-//                            cout<<"linkself:"<<scol->colsure[i].p.second[scol->colsure[i].point]<<endl;
-//                            cout<<p.p.first<<"->"<<p.p.second<<","<<p.point<<endl;
+                            scol->tag.push_back("linkself");
                             scol->scolsure.push_back(scol);
+//                            cout<<"linkself:"<<p.p.second[p.point]<<endl;
+//                            cout<<p.p.first<<"->"<<p.p.second<<","<<p.point<<endl;
+//                            cout<<"self:"<<scol->colsure[0].p.second[scol->colsure[0].point]<<endl;
+//                            cout<<scol->colsure[0].p.first<<"->"<<scol->colsure[0].p.second<<","<<scol->colsure[0].point<<endl;
                         }
                         else{
                             sColsure *newscol = new sColsure();
                             *newscol = bcol.colsure[findnum];
-                            newscol->tag = "linkexist";
-                           // cout<<"linkexist"<<endl;
+//                            cout<<"linkexist"<<endl;
+//                            cout<<p.p.first<<"->"<<p.p.second<<","<<p.point<<endl;
                             scol->scolsure.push_back(newscol);
                             scol->linkchar.push_back(scol->colsure[i].p.second[scol->colsure[i].point]);
+                            scol->tag.push_back("linkexist");
                         }
                     }
                 }
             }
             for(int i=0;i<scol->scolsure.size();i++){
-                if(scol->scolsure[i]->tag=="create"){
+                if(scol->tag[i]=="create"){
                     buildcolsure(scol->scolsure[i]);
                 }
             }
         }
+    }
+    void init_follow(int k){
+        if(k==bcol.colsure[0].colsure.size()){
+            return;
+        }
+         else{
+            string next,nextchar;
+            vector<string> tmp;
+            next = bcol.colsure[0].colsure[k].p.second[bcol.colsure[0].colsure[k].point];
+            tmp.assign(bcol.colsure[0].colsure[k].follow.begin(),bcol.colsure[0].colsure[k].follow.end());
+            if(bcol.colsure[0].colsure[k].point!=bcol.colsure[0].colsure[k].p.second.length()-1){
+                if(isterminate(bcol.colsure[0].colsure[k].p.second[bcol.colsure[0].colsure[k].point+1])){
+                    nextchar = bcol.colsure[0].colsure[k].p.second[bcol.colsure[0].colsure[k].point+1];
+                    tmp.push_back(nextchar);
+                }
+            }
+            for(int i=0;i<bcol.colsure[0].colsure.size();i++){
+                if(bcol.colsure[0].colsure[i].p.first==next){
+                    if(bcol.colsure[0].colsure[i].follow.empty()){
+                        bcol.colsure[0].colsure[i].follow.assign(tmp.begin(),tmp.end());
+                    }
+                }
+            }
+            init_follow(k+1);
+
+        }
+    }
+    void init_action_goto(sColsure *scol){
+
     }
 public:
     grammatical_analysis(){

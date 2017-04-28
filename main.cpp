@@ -4,6 +4,7 @@
 #include<fstream>
 #include<map>
 #include <utility>
+#include <sstream>
 using namespace std;
 class lexical_analysis{
 private:
@@ -324,6 +325,13 @@ class bColsure{
 public:
     vector<sColsure> colsure;
     int I=1;
+    int reduceTo(Pair p,bColsure b){
+        for(int i=0;i<b.colsure[0].colsure.size();i++){
+            if(b.colsure[0].colsure[i].p.first==p.p.first&&b.colsure[0].colsure[i].p.second==p.p.second){
+                return i;
+            }
+        }
+    }
     int exitPair(Pair fpair,int point){
         typedef vector<sColsure>::iterator It;
         It it;
@@ -350,11 +358,11 @@ class grammatical_analysis{
 private:
     bColsure bcol;
     vector<Pair> c_gramma;
-    vector<char> terminate;
-    vector<char> disterminate;
+    vector<string> terminate;
+    vector<string> disterminate;
     multimap<string,string> first;
     multimap<string,string> follow;
-    vector<vector<char> > action,Goto;
+    vector<vector<string> > action,Goto;
     void init_first(){
         typedef multimap<string,string>::iterator c_grammaMapItor;
         typedef multimap<string,string>::iterator It;
@@ -394,15 +402,13 @@ private:
         c_gramma.push_back(p5);
 
 
-        terminate.push_back('+');
-        terminate.push_back('*');
-        terminate.push_back('-');
-        terminate.push_back('=');
-        terminate.push_back('I');
-
-        disterminate.push_back('S');
-        disterminate.push_back('R');
-        disterminate.push_back('L');
+        terminate.push_back("*");
+        terminate.push_back("=");
+        terminate.push_back("I");
+        terminate.push_back("#");
+        disterminate.push_back("S");
+        disterminate.push_back("R");
+        disterminate.push_back("L");
 
 
     }
@@ -457,10 +463,11 @@ private:
                 Pair p(bcol.colsure[0].colsure[i].p.first,tmp,newpoint);
                 p.follow.assign(bcol.colsure[0].colsure[i].follow.begin(),bcol.colsure[0].colsure[i].follow.end());
                 addscol.addPair(p);
-                *scol = addscol;
-                scol->I = bcol.I;
+                addscol.I = bcol.I;
                 bcol.I++;
+                *scol = addscol;
                 bcol.colsure[0].scolsure.push_back(scol);
+                bcol.colsure[0].tag.push_back("create");
                 bcol.addColsure(addscol);
 //                cout<<"add:"<<bcol.colsure[0].colsure[i].p.first<<"->"<<tmp<<","<<p.point<<endl;
 //                cout<<"not in creat new"<<endl;
@@ -513,17 +520,22 @@ private:
             cout<<"build i:"<<i<<endl;
             buildcolsure(bcol.colsure[0].scolsure[i]);
         }
+        init_action_goto();
         sColsure *root = new sColsure();
-        init_action_goto(root);
-        for(int i=0;i<bcol.colsure[0].scolsure.size();i++){
-            cout<<"print i:"<<i<<endl;
-            printflink(bcol.colsure[0].scolsure[i]);
-        }
+        *root =  bcol.colsure[0];
+        build_action_goto(root);
+        printfActionGoto();
+//        for(int i=0;i<bcol.colsure[0].scolsure.size();i++){
+//            cout<<"print i:"<<i<<endl;
+//            printflink(bcol.colsure[0].scolsure[i]);
+//        }
         cout<<bcol.I<<endl;
     }
     bool isterminate(char s){
+        string tmp;
+        tmp = s;
         for(int i=0;i<terminate.size();i++){
-            if(s==terminate[i]){
+            if(tmp==terminate[i]){
                 return true;
             }
         }
@@ -540,6 +552,7 @@ private:
                 }
                 cout<<endl;
             }
+            cout<<"I:"<<p->I<<endl;
             cout<<endl;
             return;
         }
@@ -556,6 +569,7 @@ private:
                     cout<<p->linkchar[j];
                 }
                 cout<<endl;
+                cout<<"I:"<<p->I<<endl;
             }
             cout<<endl;
             for(int j=0;j<p->scolsure.size();j++){
@@ -612,9 +626,9 @@ private:
                         }
 //                        cout<<"creat:"<<addPair.size()+1<<endl;
 //                        cout<<p.p.first<<"->"<<p.p.second<<","<<p.point<<endl;
-                        *newscol = scolsure;
-                        newscol->I = bcol.I;
+                        scolsure.I = bcol.I;
                         bcol.I++;
+                        *newscol = scolsure;
                         scol->scolsure.push_back(newscol);
                         scol->linkchar.push_back(scol->colsure[i].p.second[scol->colsure[i].point]);
                         scol->tag.push_back("create");
@@ -675,8 +689,109 @@ private:
 
         }
     }
-    void init_action_goto(sColsure *scol){
+    void init_action_goto(){
+        for(int i=0;i<terminate.size();i++){
+            vector<string> ai;
+            string block="empty";
+            ai.push_back(terminate[i]);
+            for(int j=0;j<bcol.I;j++){
+                ai.push_back(block);
+            }
+            action.push_back(ai);
+        }
+        for(int i=0;i<disterminate.size();i++){
+            vector<string> gi;
+            string block="empty";
+            gi.push_back(disterminate[i]);
+            for(int j=0;j<bcol.I;j++){
+                gi.push_back(block);
+            }
+            Goto.push_back(gi);
+        }
+    }
+    void build_action_goto(sColsure *scol){
+        if(scol->colsure.size()==1&&scol->colsure[0].point == scol->colsure[0].tail+1&&scol->colsure[0].p.first=="~"){
+           for(int i=0;i<action.size();i++){
+                if(action[i][0]=="#"){
+                    action[i][scol->I] = "acc";
+                    return;
+                }
+           }
+        }
+        if(scol->colsure.size()==1&&scol->colsure[0].point == scol->colsure[0].tail+1){
+            int num = bcol.reduceTo(scol->colsure[0],bcol);
+            string tmp = "r";
+            string state = tmp + numtostring(num);
+            for(int i=0;i<action.size();i++){
+                action[i][scol->I] = state;
+            }
+            cout<<"state:"<<state<<endl;
+            cout<<"end "<<scol->I<<endl;
+            return;
+        }
+        else{
+            for(int i=0;i<scol->scolsure.size();i++){
+                char st = scol->linkchar[i];
+                if(isterminate(st)){
+                    string tmp = "s";
+                    string state = tmp + numtostring(scol->scolsure[i]->I);
+                    for(int j=0;j<action.size();j++){
+                        if(chartostring(scol->linkchar[i])==action[j][0]){
+                            action[j][scol->I] = state;
+                            break;
+                        }
+                    }
+                    cout<<"state:"<<state<<endl;
+                    cout<<"from "<<scol->I<<" to "<<scol->scolsure[i]->I<<endl;
 
+                }
+                else{
+                    string state = numtostring(scol->scolsure[i]->I);
+                    for(int j=0;j<Goto.size();j++){
+                        if(chartostring(scol->linkchar[i])==Goto[j][0]){
+                            Goto[j][scol->I] = state;
+                            break;
+                        }
+
+                    }
+                    cout<<"state:"<<state<<endl;
+                    cout<<"from "<<scol->I<<" to "<<scol->scolsure[i]->I<<endl;
+                }
+                if(scol->tag[i]=="create"){
+                    build_action_goto(scol->scolsure[i]);
+                }
+                else if(scol->tag[i]=="linkself"){
+                    continue;
+                }
+                else if(scol->tag[i]=="linkexist"){
+                    continue;
+                }
+            }
+        }
+    }
+    void printfActionGoto(){
+        int i,j;
+        for(i=0;i<action[0].size();i++){
+            cout<<"action  ";
+            for(j=0;j<action.size();j++){
+                cout<<action[j][i]<<" ";
+            }
+            cout<<"goto  ";
+            for(j=0;j<Goto.size();j++){
+                cout<<Goto[j][i]<<" ";
+            }
+            cout<<endl;
+        }
+    }
+    string numtostring(int n){
+        stringstream s;
+        s<<n;
+        return s.str();
+    }
+    string chartostring(char c){
+        stringstream s;
+        s<<c;
+        return s.str();
     }
 public:
     grammatical_analysis(){

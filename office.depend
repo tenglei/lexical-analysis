@@ -1,9 +1,10 @@
 # depslib dependency file v1.0
-1493035283 source:f:\office\main.cpp
+1493368698 source:f:\office\main.cpp
 	<iostream>
 	<vector>
 	<string.h>
 	<fstream>
 	<map>
 	<utility>
+	<sstream>
 

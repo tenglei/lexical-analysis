@@ -725,8 +725,8 @@ private:
             for(int i=0;i<action.size();i++){
                 action[i][scol->I] = state;
             }
-            cout<<"state:"<<state<<endl;
-            cout<<"end "<<scol->I<<endl;
+//            cout<<"state:"<<state<<endl;
+//            cout<<"end "<<scol->I<<endl;
             return;
         }
         else{
@@ -741,8 +741,8 @@ private:
                             break;
                         }
                     }
-                    cout<<"state:"<<state<<endl;
-                    cout<<"from "<<scol->I<<" to "<<scol->scolsure[i]->I<<endl;
+//                    cout<<"state:"<<state<<endl;
+//                    cout<<"from "<<scol->I<<" to "<<scol->scolsure[i]->I<<endl;
 
                 }
                 else{
@@ -754,8 +754,8 @@ private:
                         }
 
                     }
-                    cout<<"state:"<<state<<endl;
-                    cout<<"from "<<scol->I<<" to "<<scol->scolsure[i]->I<<endl;
+//                    cout<<"state:"<<state<<endl;
+//                    cout<<"from "<<scol->I<<" to "<<scol->scolsure[i]->I<<endl;
                 }
                 if(scol->tag[i]=="create"){
                     build_action_goto(scol->scolsure[i]);

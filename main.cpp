@@ -363,6 +363,8 @@ private:
     multimap<string,string> first;
     multimap<string,string> follow;
     vector<vector<string> > action,Goto;
+    vector<string> stateStack;
+    vector<string> inputStack;
     void init_first(){
         typedef multimap<string,string>::iterator c_grammaMapItor;
         typedef multimap<string,string>::iterator It;
@@ -792,6 +794,42 @@ private:
         stringstream s;
         s<<c;
         return s.str();
+    }
+    int stringtonum(string s){
+        int n;
+        stringstream ss(s);
+        ss>>n;
+        return n;
+    }
+    void analysisLexical(string s){
+        string endChar = "#",nowPointer;
+        int state;
+        s += endChar;
+        stateStack.push_back("0");
+        for(int i=0;i<s.length();i++){
+            nowPointer = s[i];
+            state = returnState(stateStack.back());
+
+        }
+    }
+    int returnState(string s){
+        int n;
+        string tmp;
+        for(int i=1;i<s.length();i++){
+            tmp += s[i];
+        }
+        stringstream ss(tmp);
+        ss>>n;
+        return n;
+    }
+    string checkAction(int state,char findChar){
+        string tmp;
+        tmp = chartostring(findChar);
+        for(int i=0;i<action.size();i++){
+            if(action[i][0]==tmp){
+                return action[i][state+1];
+            }
+        }
     }
 public:
     grammatical_analysis(){

@@ -8,7 +8,7 @@
 using namespace std;
 class lexical_analysis{
 private:
-    char *key[6]={"while","if","else","for","variable","main"};
+    char *key[6]={"while","if","else","for","int","main"};
     char token[50];
     int pt_token;
     int pt_tmp;
@@ -275,6 +275,40 @@ public:
         }
     }
     }
+};
+class symbol{
+public:
+        string name;
+        string type;
+        int value;
+        int size;
+};
+class symbolTable{
+public:
+    vector<symbol> symbolTable;
+};
+class semantic_analysis{
+private:
+    vector<symbolTable> symbolTables;
+public:
+    void addSymbolTable(symbolTable newSymbolTable){
+        symbolTables.push_back(newSymbolTable);
+    }
+    int findSymbol(string fname,string ftype){
+        for(int i=symbolTables.size()-1;i>=0;i--){
+            for(int j=0;j<symbolTables[i].symbolTable.size();j++){
+                if(fname==symbolTables[i].symbolTable[j].name&&ftype==symbolTables[i].symbolTable[j].type){
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+    void addSymbol(symbol newSymbol){
+        symbolTables.back().symbolTable.push_back(newSymbol);
+    }
+
+
 };
 class Pair{
 public:
@@ -803,13 +837,13 @@ private:
         return n;
     }
     void analysisLexical(string s){
-        cout<<"checkInput:"<<s<<endl;
         string endChar = "#",nextState;
         char nowPointer;
         int state;
         s += endChar;
         stateStack.push_back(1);
         for(int i=0;i<s.length();){
+            cout<<"checkInput:"<<s<<endl;
             nowPointer = s[i];
             state = stateStack.back();
             if(isterminate(nowPointer)){
@@ -912,7 +946,7 @@ int main(){
 //    cout<<t;
 //    lexical_analysis la(t);scol->colsure[i].point!=scol->colsure[i].p.second.length()
 //    cout<<"lexical analysis:"<<la.error<<endl;
-    string testtmp = "I=*I";
+    string testtmp = "I=***I";
     grammatical_analysis ga(testtmp);
 
 

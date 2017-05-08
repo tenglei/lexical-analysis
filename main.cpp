@@ -363,7 +363,7 @@ private:
     multimap<string,string> first;
     multimap<string,string> follow;
     vector<vector<string> > action,Goto;
-    vector<string> stateStack;
+    vector<int> stateStack;
     vector<string> inputStack;
     void init_first(){
         typedef multimap<string,string>::iterator c_grammaMapItor;
@@ -774,7 +774,7 @@ private:
     void printfActionGoto(){
         int i,j;
         for(i=0;i<action[0].size();i++){
-            cout<<"action  ";
+            cout<<"action:"<<i<<" ";
             for(j=0;j<action.size();j++){
                 cout<<action[j][i]<<" ";
             }
@@ -799,17 +799,72 @@ private:
         int n;
         stringstream ss(s);
         ss>>n;
+        //cout<<"stringtonum:"<<s<<" to "<<n<<endl;
         return n;
     }
     void analysisLexical(string s){
-        string endChar = "#",nowPointer;
+        cout<<"checkInput:"<<s<<endl;
+        string endChar = "#",nextState;
+        char nowPointer;
         int state;
         s += endChar;
-        stateStack.push_back("0");
-        for(int i=0;i<s.length();i++){
+        stateStack.push_back(1);
+        for(int i=0;i<s.length();){
             nowPointer = s[i];
-            state = returnState(stateStack.back());
+            state = stateStack.back();
+            if(isterminate(nowPointer)){
+                nextState = checkAction(state,nowPointer);
+            }
+            else{
+                nextState = checkGoto(state,chartostring(nowPointer));
+            }
+//            cout<<"stateStack:";
+//            for(int j=0;j<stateStack.size();j++){
+//                cout<<stateStack[j]<<" ";
+//            }
+//            cout<<"nowpointer:"<<nowPointer<<endl;
+//            cout<<"nextState:"<<nextState<<endl;
 
+              cout<<"inputStack:";
+              for(int j=0;j<inputStack.size();j++){
+                cout<<inputStack[j]<<" ";
+              }
+              cout<<endl;
+              cout<<"nowPointer:"<<nowPointer<<endl;
+            if(nextState[0]=='s'){
+                stateStack.push_back(returnState(nextState));
+                inputStack.push_back(chartostring(nowPointer));
+            }
+            else if(nextState[0]=='r'){
+                int popNum,gotoNextState;
+                string gotoState;
+                popNum=bcol.colsure[0].colsure[returnState(nextState)].p.second.length();
+                cout<<"reduction:"<<bcol.colsure[0].colsure[returnState(nextState)].p.first<<"->"<<bcol.colsure[0].colsure[returnState(nextState)].p.second<<endl;
+                while(popNum!=0){
+                    stateStack.pop_back();
+                    inputStack.pop_back();
+                    popNum--;
+                }
+                inputStack.push_back(bcol.colsure[0].colsure[returnState(nextState)].p.first);
+                gotoState = checkGoto(stateStack.back(),inputStack.back());
+                gotoNextState = stringtonum(gotoState);
+                stateStack.push_back(gotoNextState);
+                i--;
+            }
+            else if(nextState=="acc"){
+                cout<<"acc Lexical"<<endl;
+                return;
+            }
+            else if(nextState=="empty"){
+                cout<<"error Lexical"<<endl;
+                return;
+            }
+            else{
+                stateStack.push_back(stringtonum(nextState));
+                inputStack.push_back(chartostring(nowPointer));
+            }
+            i++;
+            cout<<endl;
         }
     }
     int returnState(string s){
@@ -827,13 +882,23 @@ private:
         tmp = chartostring(findChar);
         for(int i=0;i<action.size();i++){
             if(action[i][0]==tmp){
-                return action[i][state+1];
+                return action[i][state];
+            }
+        }
+    }
+    string checkGoto(int state,string findChar){
+        for(int i=0;i<Goto.size();i++){
+            if(Goto[i][0]==findChar){
+//                cout<<"Goto[i][0]:"<<Goto[i][0]<<endl;
+//                cout<<"state:"<<state<<endl;
+                return Goto[i][state];
             }
         }
     }
 public:
-    grammatical_analysis(){
+    grammatical_analysis(string s){
         init_colsure();
+        analysisLexical(s);
     }
 };
 int main(){
@@ -847,8 +912,8 @@ int main(){
 //    cout<<t;
 //    lexical_analysis la(t);scol->colsure[i].point!=scol->colsure[i].p.second.length()
 //    cout<<"lexical analysis:"<<la.error<<endl;
-
-    grammatical_analysis ga;
+    string testtmp = "I=*I";
+    grammatical_analysis ga(testtmp);
 
 
     return 0;

@@ -314,7 +314,7 @@ class Pair{
 public:
     pair<string,string> p;
     vector<string> follow;
-    int priority;
+    int priority=0;
     int point=0;
     int tail;
     Pair(string f,string s,int i){
@@ -338,7 +338,13 @@ public:
     }
     void test(){
         for(int i=0;i<colsure.size();i++){
-            cout<<colsure[i].p.first<<" "<<colsure[i].p.second<<" "<<colsure[i].point<<" "<<colsure[i].priority<<endl;
+            cout<<colsure[i].p.first<<" "<<colsure[i].p.second<<" "<<colsure[i].point<<" "<<colsure[i].priority<<" ";
+            cout<<"follow:";
+            for(int j=0;j<colsure[i].follow.size();j++){
+                cout<<colsure[i].follow[j]<<" ";
+            }
+            cout<<endl;
+
         }
     }
     bool exitPair(Pair fpair,int point){
@@ -424,27 +430,94 @@ private:
         Pair p("~","S",0);
         c_gramma.push_back(p);
         c_gramma[0].follow.push_back("#");
-
-
-        Pair p1("S","L=R",0);
+        Pair p1("S","im()B",0);
         c_gramma.push_back(p1);
-        Pair p2("S","R",0);
+
+        Pair p2("B","{T",0);
         c_gramma.push_back(p2);
-        Pair p3("L","*R",0);
+
+        Pair p3("T","CT",0);
         c_gramma.push_back(p3);
-        Pair p4("L","I",0);
+        Pair p4("T","}",0);
         c_gramma.push_back(p4);
-        Pair p5("R","L",0);
+        Pair p5("C","D",0);
         c_gramma.push_back(p5);
+        Pair p6("C","A",0);
+        c_gramma.push_back(p6);
+        Pair p7("C","F",0);
+        c_gramma.push_back(p7);
+        Pair p8("D","iR;",0);
+        c_gramma.push_back(p8);
+        Pair p9("D","bR;",0);
+        c_gramma.push_back(p9);
+        Pair p10("A","R=V;",0);
+        c_gramma.push_back(p10);
+        Pair p11("V","R+V",0);
+        c_gramma.push_back(p11);
+        Pair p12("V","R-V",0);
+        c_gramma.push_back(p12);
+        Pair p13("V","R*V",0);
+        c_gramma.push_back(p13);
+        Pair p14("V","R/V",0);
+        c_gramma.push_back(p14);
+        Pair p15("V","(V)",0);
+        c_gramma.push_back(p15);
+        Pair p16("V","R",0);
+        c_gramma.push_back(p16);
+        Pair p17("F","W",0);
+        c_gramma.push_back(p17);
+        Pair p18("F","E",0);
+        c_gramma.push_back(p18);
+        Pair p19("F","L",0);
+        c_gramma.push_back(p19);
+        Pair p20("W","h(R)B",0);
+        c_gramma.push_back(p20);
+        Pair p21("E","f(R)B",0);
+        c_gramma.push_back(p21);
+        Pair p22("E","e(R)BlB",0);
+        c_gramma.push_back(p22);
+        Pair p23("E","r(AR;A)B",0);
+        c_gramma.push_back(p23);
+        Pair p24("R","I",0);
+        c_gramma.push_back(p24);
 
+        for(int i=1;i<17;i++){
+            c_gramma[i].follow.push_back("#");
+        }
 
+        terminate.push_back("i");
+        terminate.push_back("m");
+        terminate.push_back(";");
+        terminate.push_back("h");
+        terminate.push_back("f");
+        terminate.push_back("e");
+        terminate.push_back("l");
+        terminate.push_back("r");
+        terminate.push_back(")");
+        terminate.push_back("(");
+        terminate.push_back("b");
+        terminate.push_back("}");
+        terminate.push_back("{");
+        terminate.push_back("+");
+        terminate.push_back("-");
         terminate.push_back("*");
+        terminate.push_back("/");
         terminate.push_back("=");
         terminate.push_back("I");
         terminate.push_back("#");
+
         disterminate.push_back("S");
-        disterminate.push_back("R");
+        disterminate.push_back("B");
+        disterminate.push_back("T");
+        disterminate.push_back("C");
+        disterminate.push_back("D");
+        disterminate.push_back("A");
+        disterminate.push_back("F");
+        disterminate.push_back("V");
+        disterminate.push_back("W");
+        disterminate.push_back("E");
         disterminate.push_back("L");
+        disterminate.push_back("R");
 
 
     }
@@ -560,12 +633,12 @@ private:
         sColsure *root = new sColsure();
         *root =  bcol.colsure[0];
         build_action_goto(root);
-        printfActionGoto();
+//        printfActionGoto();
 //        for(int i=0;i<bcol.colsure[0].scolsure.size();i++){
 //            cout<<"print i:"<<i<<endl;
 //            printflink(bcol.colsure[0].scolsure[i]);
 //        }
-        cout<<bcol.I<<endl;
+//         cout<<bcol.I<<endl;
     }
     bool isterminate(char s){
         string tmp;
@@ -845,13 +918,17 @@ private:
         for(int i=0;i<s.length();){
             cout<<"checkInput:"<<s<<endl;
             nowPointer = s[i];
+            cout<<"checknowPointer:"<<nowPointer<<endl;
             state = stateStack.back();
+            cout<<"state:"<<state<<endl;
             if(isterminate(nowPointer)){
+                cout<<"in if"<<endl;
                 nextState = checkAction(state,nowPointer);
             }
             else{
                 nextState = checkGoto(state,chartostring(nowPointer));
             }
+            cout<<"nextState:"<<nextState<<endl;
 //            cout<<"stateStack:";
 //            for(int j=0;j<stateStack.size();j++){
 //                cout<<stateStack[j]<<" ";
@@ -946,7 +1023,7 @@ int main(){
 //    cout<<t;
 //    lexical_analysis la(t);scol->colsure[i].point!=scol->colsure[i].p.second.length()
 //    cout<<"lexical analysis:"<<la.error<<endl;
-    string testtmp = "I=***I";
+    string testtmp = "im(){iI;I=I;r(I=I;I;I=I;){h(I){}}}";
     grammatical_analysis ga(testtmp);
 
 
